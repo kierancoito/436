@@ -56,18 +56,28 @@ namespace WebCrawler
                             RegexOptions.Compiled | RegexOptions.IgnoreCase);
                         
                         //find first URL
-                        Console.WriteLine(linkParser.Match(result));
+                        string newUrl = linkParser.Match(result).ToString();
+                        Console.WriteLine(hops + " " + newUrl);
+                        
+                        uri = new Uri(newUrl);
+                        baseUri = uri.GetLeftPart(System.UriPartial.Authority);
+                        extension = uri.PathAndQuery;
                         
                     } else {
                         //handle failure
                         int failureCode = (int) response.StatusCode;
-                        Console.WriteLine(failureCode);
-                        return;
+                        if (failureCode/400 == 1) {
+                            Console.WriteLine(failureCode + " Bad URL, cannot proceed any further");
+                            return;
+                            
+                        }else if (failureCode/300 == 1) {
+                            Console.WriteLine(failureCode + " URL redirect");
+                            return;
+                            
+                        }
                     }
 
-                    Console.WriteLine(hops);
                 }
-
                 hops--;
             }
         }
