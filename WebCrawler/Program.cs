@@ -11,7 +11,7 @@ namespace WebCrawler
         static void Main(string[] args)
         {
             string[] arguments; 
-            arguments = new string[2]{"https://stackoverflow.com/questions/15641797/extract-base-url-from-a-string-in-c", "4" };
+            arguments = new string[2]{"https://stackoverflow.com/questions/15641797/extract-base-url-from-a-string-in-c", "1" };
             
             //verify the correct number of arguments
             if (arguments.Length != 2) {
@@ -31,6 +31,7 @@ namespace WebCrawler
             var baseUri = uri.GetLeftPart(System.UriPartial.Authority);
             var extension = uri.PathAndQuery;
             
+            //TODO remove once application is working
             Console.WriteLine(baseUri);
             Console.WriteLine(extension);
             Console.WriteLine(baseUri + extension);
@@ -44,6 +45,7 @@ namespace WebCrawler
                     //set base address for HTTP client
                     client.BaseAddress = new Uri(baseUri);
                     //get response from website at the specified extension
+                    //TODO need to deal with if there is no extension for URL
                     HttpResponseMessage response = client.GetAsync(extension).Result;
                     
                     //check if page exists
@@ -52,11 +54,11 @@ namespace WebCrawler
                         string result = response.Content.ReadAsStringAsync().Result;
 
                         //setup regex 
-                        var linkParser = new Regex(@"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?", 
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                        string pattern = "<a href=(?:\"{1}|'{1})(https?://.*?)/?\"{1}|'{1}(\\s.*)?>";
+                        var linkParser = new Regex(pattern);
                         
                         //find first URL
-                        string newUrl = linkParser.Match(result).ToString();
+                        string newUrl = linkParser.Match(result).Groups[1].ToString();
                         Console.WriteLine(hops + " " + newUrl);
                         
                         uri = new Uri(newUrl);
@@ -71,12 +73,12 @@ namespace WebCrawler
                             return;
                             
                         }else if (failureCode/300 == 1) {
+                            //TODO need to deal with redirect 
                             Console.WriteLine(failureCode + " URL redirect");
                             return;
                             
                         }
                     }
-
                 }
                 hops--;
             }
