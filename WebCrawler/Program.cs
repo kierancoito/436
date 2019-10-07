@@ -11,7 +11,7 @@ namespace WebCrawler
         static void Main(string[] args)
         {
             string[] arguments; 
-            arguments = new string[2]{"https://stackoverflow.com/questions/15641797/extract-base-url-from-a-string-in-c", "1" };
+            arguments = new string[2]{"https://stackoverflow.com/questions/15641797/extract-base-url-from-a-string-in-c", "2" };
             
             //verify the correct number of arguments
             if (arguments.Length != 2) {
@@ -43,10 +43,10 @@ namespace WebCrawler
                     {AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate})) {
                     
                     //set base address for HTTP client
-                    client.BaseAddress = new Uri(baseUri);
+                    client.BaseAddress = new Uri(baseUri + extension);
                     //get response from website at the specified extension
                     //TODO need to deal with if there is no extension for URL
-                    HttpResponseMessage response = client.GetAsync(extension).Result;
+                    HttpResponseMessage response = client.GetAsync("").Result;
                     
                     //check if page exists
                     if (response.IsSuccessStatusCode) {
@@ -64,6 +64,8 @@ namespace WebCrawler
                         uri = new Uri(newUrl);
                         baseUri = uri.GetLeftPart(System.UriPartial.Authority);
                         extension = uri.PathAndQuery;
+                        
+                        //TODO check if current URL is the same as previous URL
                         
                     } else {
                         //handle failure
