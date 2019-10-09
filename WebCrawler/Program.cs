@@ -11,7 +11,7 @@ namespace WebCrawler {
             //TODO remove when testing full usage
             string[] arguments;
             arguments = new string[2]
-                {"http://courses.washington.edu/css502/dimpsey", "50"};
+                {"http://www.amazn.com", "50"};
 
             //verify the correct number of arguments
             if (arguments.Length != 2) {
@@ -37,8 +37,7 @@ namespace WebCrawler {
 
             //TODO remove once application is working
             Console.WriteLine("initial URL: " + uri.ToString());
-
-
+            
             int count = 1;
             while (hops >= count) {
                 //connect to http client 
@@ -74,10 +73,22 @@ namespace WebCrawler {
                         if (failureCode / 300 == 1) {
                             
                             //find redirected URL
-                            uri = FindNextHtml(response, uri, previousURLS, count);
-                            if (uri == null) {
-                                return;
+                            string result = response.Content.ReadAsStringAsync().Result;
+                            string pattern = "<a[^>]* href=\"([^\"]*)\"";
+                            var linkParser = new Regex(pattern);
+                            MatchCollection redirected = linkParser.Matches(result);
+                            string newAddress = redirected[0].Groups[1].ToString();
+                            Uri oldUri = uri;
+
+                            try {
+                                uri = new Uri(uri.GetLeftPart(System.UriPartial.Authority).ToString() + newAddress.ToString());
                             }
+                            catch ( UriFormatException ) {
+                                Console.Write("Bad address suggested by redirection. Cannot go any further");
+
+                            }
+                            
+                            //decrement count to account for the redirection that happened
                             count--;
                             Console.WriteLine(failureCode + " URL redirect, new one is: " + uri.ToString());
                         }
@@ -95,8 +106,6 @@ namespace WebCrawler {
 
             //setup regex 
             string pattern = "<a href=(?:\"{1}|'{1})(http?://.*?)/?\"{1}|'{1}(\\s.*)?>";
-            //"(?:<a href=\"{1}|'{1})(http?://.*?)/?\"{1}|'{1}(\\s.*)?>";
-
             var linkParser = new Regex(pattern);
 
             //get all valid URLs from the current website
@@ -131,6 +140,10 @@ namespace WebCrawler {
                         goodURL = false;
                         currentParseUrl++;
                         url = newUrl[currentParseUrl].Groups[1].ToString();
+                        if (url.Contains(".pdf")) {
+                            Console.WriteLine("Final location is a .pdf file which does not contain html");
+                            return null;
+                        }
                     }
                 }
 
