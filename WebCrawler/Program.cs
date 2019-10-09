@@ -53,7 +53,11 @@ namespace WebCrawler {
 
                     //check if page exists
                     if (response.IsSuccessStatusCode) {
+                        
                         uri = FindNextHtml(response, uri, previousURLS, count);
+                        if (uri == null) {
+                            return;
+                        }
                     }
                     else {
                         //extract failure code
@@ -68,11 +72,14 @@ namespace WebCrawler {
 
                         //3xx errors should redirect
                         if (failureCode / 300 == 1) {
-                            string result = response.Content.ReadAsStringAsync().Result;
-
-                            //TODO need to deal with redirect 
-                            Console.WriteLine(failureCode + " URL redirect: " + uri.ToString());
-                            return;
+                            
+                            //find redirected URL
+                            uri = FindNextHtml(response, uri, previousURLS, count);
+                            if (uri == null) {
+                                return;
+                            }
+                            count--;
+                            Console.WriteLine(failureCode + " URL redirect, new one is: " + uri.ToString());
                         }
                     }
                 }
@@ -95,11 +102,12 @@ namespace WebCrawler {
             //get all valid URLs from the current website
             MatchCollection newUrl = linkParser.Matches(result);
 
-            int curerntParseUrl = 0;
+            int currentParseUrl = 0;
             string url;
+            
             //ensure there is a valid next URL from the current URL
             if (newUrl.Count > 0) {
-                url = newUrl[curerntParseUrl].Groups[1].ToString();
+                url = newUrl[currentParseUrl].Groups[1].ToString();
             }
             else {
                 Console.WriteLine("No more valid URLs to visit");
@@ -107,6 +115,7 @@ namespace WebCrawler {
             }
 
             int checker = 0;
+            
             //ensure URL is valid
             bool goodURL = false;
             checker = 0;
@@ -120,36 +129,34 @@ namespace WebCrawler {
                     }
                     catch (UriFormatException) {
                         goodURL = false;
-                        curerntParseUrl++;
-                        url = newUrl[curerntParseUrl].Groups[1].ToString();
+                        currentParseUrl++;
+                        url = newUrl[currentParseUrl].Groups[1].ToString();
                     }
                 }
 
                 //verify the URL has not been visited
                 //if not find the next possible URL
                 while (checker < count + 1) {
+                    
                     if (url.Equals(previousURLS[checker])) {
+                        
                         //if the current URL has been visited before get the next URL
-                        curerntParseUrl++;
+                        currentParseUrl++;
 
-                        if (newUrl.Count > curerntParseUrl) {
-                            url = newUrl[curerntParseUrl].Groups[1].ToString();
+                        if (newUrl.Count > currentParseUrl) {
+                            url = newUrl[currentParseUrl].Groups[1].ToString();
                             goodURL = false;
                         }
                         else {
                             Console.WriteLine("No more valid URLs to visit");
                             return null;
                         }
-
                         continue;
                     }
-
                     checker++;
                 }
-
                 checker = 0;
             }
-
             //add current URL to list of visited URLs
             previousURLS[count + 1] = url;
             
