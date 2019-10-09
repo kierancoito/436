@@ -3,17 +3,17 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Http;
+using System.Security.Policy;
 
 namespace WebCrawler {
     class Program {
         static void Main(string[] args) {
-            
             //TODO remove when testing full usage
             string[] arguments;
             arguments = new string[2]
-                {"https://stackoverflow.com/questions/15641797/extract-base-url-from-a-string-in-c", "2"};
+                {"http://courses.washington.edu/css502/dimpsey", "10"};
 
-            //verify the correct number of arguments
+                    //verify the correct number of arguments
             if (arguments.Length != 2) {
                 Console.WriteLine("Not enough valid arguments to run application");
                 return;
@@ -22,88 +22,124 @@ namespace WebCrawler {
             //find out how many hops have been specified by the user
             int hops = int.Parse(arguments[1]);
             
+            //create an array to remember all visited URLs
+            string[] previousURLS = new string[hops];
+            previousURLS[0] = arguments[0];
+
             //verify valid number of hops
             if (hops <= 0) {
                 Console.WriteLine("invalid number of hops specified to run application");
                 return;
             }
             
-            //create an array to keep track of previous websites visited
-            string[] previousSites = new string[hops];
-
             //extract initial base URI and the URI path 
             var uri = new Uri(arguments[0]);
             
-            //seperate parts of URL
-            //var baseUri = uri.GetLeftPart(System.UriPartial.Authority);
-            //var extension = uri.PathAndQuery;
-
             //TODO remove once application is working
             Console.WriteLine("initial URL: " + uri.ToString());
-
-            //remember previous address to ensure it isn't gone to again
-            string oldUri = uri.ToString();
             
-            while (hops > 0) {
 
+            int count = 0;
+            while (hops > count) {
                 //connect to http client 
                 using (var client = new HttpClient(new HttpClientHandler
                     {AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate})) {
-                    
                     //set base address for HTTP client
                     client.BaseAddress = new Uri(uri.ToString());
-                    
+
                     //get response from website at the specified extension
                     HttpResponseMessage response = client.GetAsync("").Result;
 
                     //check if page exists
                     if (response.IsSuccessStatusCode) {
-                        
                         //handle success
                         string result = response.Content.ReadAsStringAsync().Result;
 
                         //setup regex 
                         string pattern = "<a href=(?:\"{1}|'{1})(http?://.*?)/?\"{1}|'{1}(\\s.*)?>";
-                        var linkParser = new Regex(pattern);
-                        int filePosition = 0;
+                        //"(?:<a href=\"{1}|'{1})(http?://.*?)/?\"{1}|'{1}(\\s.*)?>";
                         
-                        //get next URL that is different than the current URL
-                        while (uri.ToString() == oldUri) {
-                            
-                            //save previous URL
-                            oldUri = uri.ToString();
-                            
-                            //find next valid
-                            //TODO change to Matches instead of Match and redo how saving previous addresses and skipping others works
-                            string newUrl = linkParser.Match(result, filePosition).Groups[1].ToString();
-                            uri = new Uri(newUrl);
+                        var linkParser = new Regex(pattern);
+                        
+                        //get all valid URLs from the current website
+                        MatchCollection newUrl = linkParser.Matches(result);
+                        
 
-                            if (oldUri == uri.ToString()) {
-                                filePosition = result.IndexOf(uri.ToString(), filePosition+1) + 1;
-                                
-                            }else {
-                                Console.WriteLine(hops + " " + newUrl);
 
-                            }
+                        int curerntParseUrl = 0;
+                        string url;
+                        //ensure there is a valid next URL from the current URL
+                        if (newUrl.Count > 0) {
+                            url = newUrl[curerntParseUrl].Groups[1].ToString();
+                            
                         }
-                    }else {
+                        else {
+                            Console.WriteLine("No more valid URLs to visit");
+                            return;
+                        }
+                        
+
+                        int checker = 0;
+                        //ensure URL is valid
+                        bool goodURL = false;
+                        checker = 0;
+                        while(goodURL != true){
+                            //check if the current URL has been visited before
+
+                            while (goodURL != true) {
+                                try {
+                                    uri = new Uri(url);
+                                    goodURL = true;
+                                }
+                                catch (UriFormatException u) {
+                                    goodURL = false;
+                                    curerntParseUrl++;
+                                    url = newUrl[curerntParseUrl].Groups[1].ToString();
+                                }
+                            }
+
+                            while (checker < count+1) {
+                                if (url.Equals(previousURLS[checker])) {
+                                    //if the current URL has been visited before get the next URL
+                                    curerntParseUrl++;
+                                    
+                                    if (newUrl.Count > curerntParseUrl) {
+                                        url = newUrl[curerntParseUrl].Groups[1].ToString();
+                                        goodURL = false;
+                                    }
+                                    else {
+                                        Console.WriteLine("No more valid URLs to visit");
+                                        return;
+                                    }
+                                    
+                                    continue;
+                                }
+                                checker++;
+                            }
+                            checker = 0;
+                        }
+                        //add current URL to list of visited URLs
+                        previousURLS[count + 1] = url;
+                    }
+                    else {
                         //handle failure
                         int failureCode = (int) response.StatusCode;
                         if (failureCode / 400 == 1) {
-                            Console.WriteLine(failureCode + " Bad URL, cannot proceed any further");
+                            
+                            Console.WriteLine(failureCode + " Bad URL: " + uri.ToString() + " cannot proceed any further");
                             return;
                         }
                         else if (failureCode / 300 == 1) {
+                            string result = response.Content.ReadAsStringAsync().Result;
+                            
                             //TODO need to deal with redirect 
-                            Console.WriteLine(failureCode + " URL redirect");
+                            Console.WriteLine(failureCode + " URL redirect: " + uri.ToString());
                             return;
                         }
                     }
                 }
-                //remember previous address to ensure it isn't gone to again
-                oldUri = uri.ToString();
-                
-                hops--;
+                Console.WriteLine(count + " " + uri.ToString());
+                count++;
             }
         }
     }
