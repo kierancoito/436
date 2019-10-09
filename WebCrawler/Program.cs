@@ -11,9 +11,9 @@ namespace WebCrawler {
             //TODO remove when testing full usage
             string[] arguments;
             arguments = new string[2]
-                {"http://courses.washington.edu/css502/dimpsey", "10"};
+                {"http://courses.washington.edu/css502/dimpsey", "50"};
 
-                    //verify the correct number of arguments
+            //verify the correct number of arguments
             if (arguments.Length != 2) {
                 Console.WriteLine("Not enough valid arguments to run application");
                 return;
@@ -23,7 +23,7 @@ namespace WebCrawler {
             int hops = int.Parse(arguments[1]);
             
             //create an array to remember all visited URLs
-            string[] previousURLS = new string[hops];
+            string[] previousURLS = new string[hops+2];
             previousURLS[0] = arguments[0];
 
             //verify valid number of hops
@@ -39,11 +39,15 @@ namespace WebCrawler {
             Console.WriteLine("initial URL: " + uri.ToString());
             
 
-            int count = 0;
-            while (hops > count) {
+            int count = 1;
+            while (hops >= count) {
                 //connect to http client 
-                using (var client = new HttpClient(new HttpClientHandler
-                    {AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate})) {
+                using (var client = new HttpClient(
+                    new HttpClientHandler {
+                        AllowAutoRedirect = true, 
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                    })) {
+                    
                     //set base address for HTTP client
                     client.BaseAddress = new Uri(uri.ToString());
 
@@ -64,8 +68,6 @@ namespace WebCrawler {
                         //get all valid URLs from the current website
                         MatchCollection newUrl = linkParser.Matches(result);
                         
-
-
                         int curerntParseUrl = 0;
                         string url;
                         //ensure there is a valid next URL from the current URL
@@ -78,26 +80,28 @@ namespace WebCrawler {
                             return;
                         }
                         
-
                         int checker = 0;
                         //ensure URL is valid
                         bool goodURL = false;
                         checker = 0;
+                        
                         while(goodURL != true){
-                            //check if the current URL has been visited before
-
+                            
+                            //get the first valid URL 
                             while (goodURL != true) {
                                 try {
                                     uri = new Uri(url);
                                     goodURL = true;
                                 }
-                                catch (UriFormatException u) {
+                                catch ( UriFormatException ) {
                                     goodURL = false;
                                     curerntParseUrl++;
                                     url = newUrl[curerntParseUrl].Groups[1].ToString();
                                 }
                             }
 
+                            //verify the URL has not been visited
+                            //if not find the next possible URL
                             while (checker < count+1) {
                                 if (url.Equals(previousURLS[checker])) {
                                     //if the current URL has been visited before get the next URL
@@ -122,14 +126,17 @@ namespace WebCrawler {
                         previousURLS[count + 1] = url;
                     }
                     else {
-                        //handle failure
+                        //extract failure code
                         int failureCode = (int) response.StatusCode;
+                        
+                        //4xx errors will be a dead link
                         if (failureCode / 400 == 1) {
                             
                             Console.WriteLine(failureCode + " Bad URL: " + uri.ToString() + " cannot proceed any further");
                             return;
                         }
-                        else if (failureCode / 300 == 1) {
+                        //3xx errors should redirect
+                        if (failureCode / 300 == 1) {
                             string result = response.Content.ReadAsStringAsync().Result;
                             
                             //TODO need to deal with redirect 
