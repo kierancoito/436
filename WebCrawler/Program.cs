@@ -4,27 +4,29 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Http;
 using System.Security.Policy;
-
+/****
+ *
+ *
+ *
+ *
+ * 
+ ****/
 namespace WebCrawler {
     class Program {
         static void Main(string[] args) {
-            //TODO remove when testing full usage
-            string[] arguments;
-            arguments = new string[2]
-                {"http://www.amazn.com", "50"};
-
+            
             //verify the correct number of arguments
-            if (arguments.Length != 2) {
+            if (args.Length != 2) {
                 Console.WriteLine("Not enough valid arguments to run application");
                 return;
             }
 
             //find out how many hops have been specified by the user
-            int hops = int.Parse(arguments[1]);
+            int hops = int.Parse(args[1]);
 
             //create an array to remember all visited URLs
             string[] previousURLS = new string[hops + 2];
-            previousURLS[0] = arguments[0];
+            previousURLS[0] = args[0];
 
             //verify valid number of hops
             if (hops <= 0) {
@@ -32,8 +34,16 @@ namespace WebCrawler {
                 return;
             }
 
-            //extract initial base URI and the URI path 
-            var uri = new Uri(arguments[0]);
+            //extract initial base URI and the URI path
+            try {
+                var uri = new Uri(args[0]);
+            }
+            catch ( UriFormatException ) {
+                Console.Write( args[0] + " is not a valid address, please inspect and retry");
+                return;
+            }
+
+            
 
             //TODO remove once application is working
             Console.WriteLine("initial URL: " + uri.ToString());
@@ -41,14 +51,14 @@ namespace WebCrawler {
             int count = 1;
             while (hops >= count) {
                 //connect to http client 
-                using (var client = new HttpClient(new HttpClientHandler {
+                using (var client = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler {
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
                 })) {
                     //set base address for HTTP client
                     client.BaseAddress = new Uri(uri.ToString());
 
                     //get response from website at the specified extension
-                    HttpResponseMessage response = client.GetAsync("").Result;
+                    System.Net.Http.HttpResponseMessage response = client.GetAsync("").Result;
 
                     //check if page exists
                     if (response.IsSuccessStatusCode) {
@@ -100,7 +110,7 @@ namespace WebCrawler {
             }
         }
 
-        private static Uri FindNextHtml(HttpResponseMessage response, Uri uri, string[] previousURLS, int count) {
+        private static Uri FindNextHtml(System.Net.Http.HttpResponseMessage response, Uri uri, string[] previousURLS, int count) {
             //handle success
             string result = response.Content.ReadAsStringAsync().Result;
 
