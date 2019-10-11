@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="$PROJECT_DIR$" t="IncludeRecursive">
+    <e p="C:\Users\Kieran\.Rider2019.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\Kieran\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_WebCrawler.1181519836.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler" t="IncludeRecursive">
       <e p="bin" t="ExcludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
@@ -12,7 +14,5 @@
       <e p="WebCrawler.csproj" t="IncludeRecursive" />
       <e p="WebCrawler.sln" t="IncludeFlat" />
     </e>
-    <e p="$USER_HOME$/Library/Caches/Rider2019.2/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/Library/Caches/Rider2019.2/resharper-host/local/Transient/ReSharperHost/v192/SolutionCaches/_WebCrawler.-68273037.00" t="ExcludeRecursive" />
   </component>
 </project>

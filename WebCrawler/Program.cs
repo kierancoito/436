@@ -35,8 +35,9 @@ namespace WebCrawler {
             }
 
             //extract initial base URI and the URI path
+            Uri uri;
             try {
-                var uri = new Uri(args[0]);
+                uri = new Uri(args[0]);
             }
             catch ( UriFormatException ) {
                 Console.Write( args[0] + " is not a valid address, please inspect and retry");
