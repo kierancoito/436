@@ -3,3 +3,9 @@
 /Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WebCrawler/bin/Debug/WebCrawler.pdb
 /Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WebCrawler/obj/Debug/WebCrawler.exe
 /Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WebCrawler/obj/Debug/WebCrawler.pdb
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\bin\Debug\WebCrawler.exe
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\bin\Debug\WebCrawler.pdb
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\obj\Debug\WebCrawler.csprojAssemblyReference.cache
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\obj\Debug\WebCrawler.csproj.CoreCompileInputs.cache
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\obj\Debug\WebCrawler.exe
+C:\Users\Kieran\iCloudDrive\Desktop\School\19-20\2_FALL\CSS 436\Assignments\WebCrawler\obj\Debug\WebCrawler.pdb

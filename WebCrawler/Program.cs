@@ -3,16 +3,33 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Net.Http;
+using System.Security;
 using System.Security.Policy;
 /****
+ * Created by Kieran Coito
+ * CSS436 Fall 2019
+ * Started October 6th 2019
+ * Finished October 10th 2019
+ *
+ * 
+ * This program will take in two arguments a valid URL and a number of hops
+ * It will start on the supplied URL, and parse its HTML for the next
+ * http URL that is within a <a href >, it will continue to do this until
+ * it hits an invalid website, hits a website that doesn't contain
+ * another website to hop to, or it goes through all of the hops
  *
  *
- *
- *
+ * This program will only parse HTTP websites and not HTTPS websites
  * 
  ****/
 namespace WebCrawler {
     class Program {
+        /**
+         * Main method of this program that will take in the arguments from the user and then execute the program
+         *
+         * Parameters:
+         *     string[] args - arguments supplied by the user via the command line
+         */
         static void Main(string[] args) {
             
             //verify the correct number of arguments
@@ -30,7 +47,7 @@ namespace WebCrawler {
 
             //verify valid number of hops
             if (hops <= 0) {
-                Console.WriteLine("invalid number of hops specified to run application");
+                Console.WriteLine("Invalid number of hops specified to run application");
                 return;
             }
 
@@ -44,27 +61,24 @@ namespace WebCrawler {
                 return;
             }
 
-            
-
-            //TODO remove once application is working
-            Console.WriteLine("initial URL: " + uri.ToString());
-            
             int count = 1;
+            HttpResponseMessage response = null;
             while (hops >= count) {
                 //connect to http client 
-                using (var client = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler {
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-                })) {
+                using (var client = new HttpClient(new HttpClientHandler {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate})) {
                     //set base address for HTTP client
-                    client.BaseAddress = new Uri(uri.ToString());
+                    client.BaseAddress = uri;
 
                     //get response from website at the specified extension
-                    System.Net.Http.HttpResponseMessage response = client.GetAsync("").Result;
+                    response = client.GetAsync("").Result;
 
                     //check if page exists
                     if (response.IsSuccessStatusCode) {
-                        
+                        //find next valid url
                         uri = FindNextHtml(response, uri, previousURLS, count);
+                        //if no valid url is returned than exit out of the program as that means there is no
+                        //next url and the program has hit a deadend
                         if (uri == null) {
                             return;
                         }
@@ -80,38 +94,50 @@ namespace WebCrawler {
                             return;
                         }
 
-                        //3xx errors should redirect
+                        //3xx errors is a redirect
                         if (failureCode / 300 == 1) {
                             
                             //find redirected URL
+                            //this is slightly different than the other HTML regex expression used in FindNextHtml
+                            //this is to account for redirects that are just the final part of a website 
+                            // i.e /CSS to /css
                             string result = response.Content.ReadAsStringAsync().Result;
                             string pattern = "<a[^>]* href=\"([^\"]*)\"";
                             var linkParser = new Regex(pattern);
                             MatchCollection redirected = linkParser.Matches(result);
                             string newAddress = redirected[0].Groups[1].ToString();
-                            Uri oldUri = uri;
 
                             try {
                                 uri = new Uri(uri.GetLeftPart(System.UriPartial.Authority).ToString() + newAddress.ToString());
                             }
                             catch ( UriFormatException ) {
                                 Console.Write("Bad address suggested by redirection. Cannot go any further");
-
                             }
                             
                             //decrement count to account for the redirection that happened
                             count--;
-                            Console.WriteLine(failureCode + " URL redirect, new one is: " + uri.ToString());
                         }
                     }
                 }
-
-                Console.WriteLine(count + " " + uri.ToString());
                 count++;
             }
+            //print out final destination and the html contents of that destination
+            Console.WriteLine(" Final destination happened at hop " + count);
+            Console.WriteLine(" The final URL is " + uri.ToString());
+            Console.WriteLine(response.Content.ReadAsStringAsync().Result);
         }
-
-        private static Uri FindNextHtml(System.Net.Http.HttpResponseMessage response, Uri uri, string[] previousURLS, int count) {
+        
+        /**
+         * This function will find the next valid URL from the supplied website
+         *
+         * Parameters
+         *     HttpResponseMessage response - the response message that was received from the currently visited
+         *                                    URL website.
+         *     Uri uri - The uri object that is used for the http connection
+         *     string[] previousURLs - An array of all URLs that have been visited by the program as it operates
+         *     int count - the current hop that the program
+         */
+        private static Uri FindNextHtml( HttpResponseMessage response, Uri uri, string[] previousURLS, int count ) {
             //handle success
             string result = response.Content.ReadAsStringAsync().Result;
 
@@ -122,35 +148,44 @@ namespace WebCrawler {
             //get all valid URLs from the current website
             MatchCollection newUrl = linkParser.Matches(result);
 
+            //create a iterator to parse through all regex matches in the newUrl collection
             int currentParseUrl = 0;
             string url;
+            string previousUrl = uri.ToString();
             
-            //ensure there is a valid next URL from the current URL
-            if (newUrl.Count > 0) {
+            //ensure there is a valid URL to visit 
+            //if there isn't terminate the program as the current URL
+            //cannot be hopped from
+            if (newUrl.Count > 0){
                 url = newUrl[currentParseUrl].Groups[1].ToString();
             }
             else {
                 Console.WriteLine("No more valid URLs to visit");
+                Console.WriteLine(previousUrl + " was the last url visited");
+                Console.WriteLine(result);
                 return null;
             }
 
-            int checker = 0;
-            
             //ensure URL is valid
             bool goodURL = false;
-            checker = 0;
+            int checker = 0;
 
+            //loop as long as the currently URL is not a valid URL
             while (goodURL != true) {
                 //get the first valid URL 
                 while (goodURL != true) {
                     try {
+                        // attempt use the new url
                         uri = new Uri(url);
                         goodURL = true;
                     }
                     catch (UriFormatException) {
+                        
                         goodURL = false;
                         currentParseUrl++;
                         url = newUrl[currentParseUrl].Groups[1].ToString();
+                        
+                        //if the new url ends in a pdf it cannot proceed further
                         if (url.Contains(".pdf")) {
                             Console.WriteLine("Final location is a .pdf file which does not contain html");
                             return null;
@@ -159,7 +194,7 @@ namespace WebCrawler {
                 }
 
                 //verify the URL has not been visited
-                //if not find the next possible URL
+                //if it has been found find the next valid URL and begin the checking again
                 while (checker < count + 1) {
                     
                     if (url.Equals(previousURLS[checker])) {
@@ -179,11 +214,13 @@ namespace WebCrawler {
                     }
                     checker++;
                 }
+                //reset checker in case goodURL is not true
                 checker = 0;
             }
             //add current URL to list of visited URLs
             previousURLS[count + 1] = url;
             
+            //return new 
             return uri;
         }
     }
