@@ -27,7 +27,7 @@ namespace WebCrawler {
         /**
          * Main method of this program that will take in the arguments from the user and then execute the program
          *
-         * Parameters:
+         * Parameters
          *     string[] args - arguments supplied by the user via the command line
          */
         static void Main(string[] args) {
