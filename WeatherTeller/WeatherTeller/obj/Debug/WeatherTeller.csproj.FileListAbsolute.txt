@@ -1,0 +1,9 @@
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/obj/Debug/WeatherTeller.csprojAssemblyReference.cache
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/bin/Debug/WeatherTeller.exe
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/bin/Debug/WeatherTeller.pdb
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/bin/Debug/JsonNetExtension.dll
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/bin/Debug/Newtonsoft.Json.dll
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/bin/Debug/Newtonsoft.Json.xml
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/obj/Debug/WeatherTeller.csproj.CopyComplete
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/obj/Debug/WeatherTeller.exe
+/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/WeatherTeller/WeatherTeller/obj/Debug/WeatherTeller.pdb
