@@ -20,9 +20,8 @@ namespace WeatherTeller {
          * 
          */
         static void Main(string[] args) {
-            //TODO remove when testing is done
-            args = new string[] {" "};
 
+            //verify the user has entered a city
             if (args.Length <= 1) {
                 Console.WriteLine("You must enter a city to get its weather details");
                 return;
