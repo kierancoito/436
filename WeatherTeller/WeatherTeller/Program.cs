@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Newtonsoft.Json;
 /**
  * Created by Kieran Coito
@@ -20,16 +21,16 @@ namespace WeatherTeller {
          * 
          */
         static void Main(string[] args) {
-
+            
             //verify the user has entered a city
-            if (args.Length <= 1) {
+            if (args.Length < 1) {
                 Console.WriteLine("You must enter a city to get its weather details");
                 return;
             }
 
             //creating end of address from user specified information
-            string city = args[1];
-            for (int i = 2; i < args.Length; i++) {
+            string city = args[0];
+            for (int i = 1; i < args.Length; i++) {
                 city += "+" + args[i];
             }
             
@@ -55,8 +56,18 @@ namespace WeatherTeller {
                 }
                 
                 //get results and convert them into workable information
+                //if conversion of json file fails alert user
                 string result = response.Content.ReadAsStringAsync().Result;
-                RootObject weatherDetails = JsonConvert.DeserializeObject<RootObject>(result);
+                RootObject weatherDetails;
+                try {
+                    weatherDetails = JsonConvert.DeserializeObject<RootObject>(result);
+                }
+                catch ( Exception ) {
+                    Console.WriteLine("Converting the JSON object failed. " +
+                                      "This means one of the values in the JSON value were not correct. " +
+                                      "Try Again");
+                    return;
+                }
                 //print weather results to user
                 GetWeatherInfo(weatherDetails);
             }
@@ -108,54 +119,61 @@ namespace WeatherTeller {
      * openweathermap.org for a weather class. These classes are used to convert the json
      * file that openweathermap returns into classes that can then be used in a easier form
      */
-    public class Coord {
+    public class Coord
+    {
         public double lon { get; set; }
         public double lat { get; set; }
     }
 
-    public class Weather {
+    public class Weather
+    {
         public int id { get; set; }
         public string main { get; set; }
         public string description { get; set; }
         public string icon { get; set; }
     }
 
-    public class Main {
+    public class Main
+    {
         public double temp { get; set; }
-        public int pressure { get; set; }
+        public double pressure { get; set; }
         public int humidity { get; set; }
         public double temp_min { get; set; }
         public double temp_max { get; set; }
+        public double sea_level { get; set; }
+        public double grnd_level { get; set; }
     }
 
-    public class Wind {
+    public class Wind
+    {
         public double speed { get; set; }
-        public int deg { get; set; }
+        public double deg { get; set; }
     }
 
-    public class Clouds {
+    public class Clouds
+    {
         public int all { get; set; }
     }
 
-    public class Sys {
-        public int type { get; set; }
-        public int id { get; set; }
+    public class Sys
+    {
         public double message { get; set; }
         public string country { get; set; }
-        public int sunrise { get; set; }
-        public int sunset { get; set; }
+        public double sunrise { get; set; }
+        public double sunset { get; set; }
     }
 
-    public class RootObject {
+    public class RootObject
+    {
         public Coord coord { get; set; }
         public List<Weather> weather { get; set; }
         public string @base { get; set; }
         public Main main { get; set; }
-        public int visibility { get; set; }
         public Wind wind { get; set; }
         public Clouds clouds { get; set; }
         public int dt { get; set; }
         public Sys sys { get; set; }
+        public int timezone { get; set; }
         public int id { get; set; }
         public string name { get; set; }
         public int cod { get; set; }
