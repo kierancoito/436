@@ -14,7 +14,7 @@ Initial File creation
 """
 
 metaDataText = "metaData.txt"
-bucketName = "bucket"
+bucketName = "bucket" + str(datetime.now().strftime('%Y%m%d%H%M%S'))
 
 def backer():
     newSave = False
@@ -22,9 +22,6 @@ def backer():
     #set up client to upload files, and create new bucket to upload files to
     client = boto3.client('s3')
 
-    # todo check if bucket exists first
-    # then if it doesn't exist create new bucket
-    # os.environ['AWS_DEFAULT_REGION'] =
     try:
         client.create_bucket(Bucket= bucketName, CreateBucketConfiguration={'LocationConstraint': 'us-west-2' },)
     except ClientError as e:
@@ -34,6 +31,13 @@ def backer():
         if e.response['ResponseMetadata']['HTTPStatusCode'] == 500:
             print("Could not connect to service will retry")
             return -1
+        else:
+            print("An error occurred while trying to connect to the client, please check credentials and rerun")
+            return 0
+
+    print(" ")
+    print("The bucket named " + bucketName + " was created to store your backup")
+    print(" ")
 
     #check if there is already a meta data file or not, which dictates if this is the first run or not
     if not os.path.exists(metaDataText):
@@ -54,29 +58,46 @@ def backer():
     s3 = boto3.resource('s3')
 
     print("uploading starting")
+    print(" ")
     #iterate through all files in the current directory and down
     for dirname, dirnames, filenames in os.walk('.'):
         for filename in filenames:
+
+            fullpath = str(os.path.join(dirname, filename))
+            length = len(fullpath)
+
+            #skip over metadata used for this file and this file itself
+            if filename == "Backup.py" or filename == "metaData.txt":
+                continue
+
             #the current file that will be uploaded, get last time it was updated
-            currentFileUpdateTime = os.path.getmtime(dirname + '/' + filename)
+            currentFileUpdateTime = os.path.getmtime(fullpath)
             updateTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(currentFileUpdateTime))
+
             #only upload of this is a new save or the file has been edited since the last upload
             if newSave or updateTime > lastUpdatedTime:
-                length = len(dirname)
+                #attempt to upload file, catch any errors and handle appropriately
                 try:
-                    s3.Object(bucketName, 'Backup' + dirname[1:length] + '/' +filename )\
-                        .put(Body=open(dirname + '/' + filename,"rb"))
+                    s3.Object(bucketName, 'Backups' + fullpath[1:length] )\
+                        .put(Body=open(fullpath,"rb"))
                 except ClientError as e:
                     if e.response['ResponseMetadata']['HTTPStatusCode'] == 500:
                         print("Could not connect to service will retry")
                         return -1
+                    else:
+                        print("An error occurred while trying to upload, "
+                            "please check credentials and file permissions and rerun")
 
-                print(dirname + '/' + filename + " uploaded to " 'Backup' + dirname[1:length] + "/")
-
+                print(filename + " uploaded to " 'Backups' + fullpath[1:length] )
+    print(" ")
     print("Uploading has finished")
     return 0
 
-
+print(" ")
+print(" ")
+print(" ")
+#run back up program
 retry = backer()
+#if backer returns a -1 than there was a connection issue and it should run backer one more time
 if retry == -1:
     backer()
