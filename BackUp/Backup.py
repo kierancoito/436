@@ -69,10 +69,11 @@ def backer():
     print("The bucket named " + bucketName + " will store your backup")
     print("upload starting")
     print(" ")
-    #iterate through all files in the current directory and down
+    #iterate through all files in the current directory and attempt to upload them
     for dirname, dirnames, filenames in os.walk('.'):
         for filename in filenames:
 
+            #construct the full directory file path to the current file
             fullpath = str(os.path.join(dirname, filename))
             length = len(fullpath)
 
@@ -95,7 +96,7 @@ def backer():
                         print("An error occurred while trying to upload, "
                             "please check credentials and file permissions and rerun")
 
-                print(filename + " uploaded to " 'Backups' + fullpath[1:length] )
+                print(filename + " uploaded to " 'Backups' + fullpath[1:length] )e
     print("Uploading has finished")
     return 0
 
