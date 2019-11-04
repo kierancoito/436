@@ -1,0 +1,12 @@
+#!"/Users/kierancoito/Desktop/School/19-20/2_FALL/CSS 436/Assignments/BackUp/venv/bin/python"
+# EASY-INSTALL-ENTRY-SCRIPT: 'pip==19.0.3','console_scripts','pip'
+__requires__ = 'pip==19.0.3'
+import re
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(
+        load_entry_point('pip==19.0.3', 'console_scripts', 'pip')()
+    )
