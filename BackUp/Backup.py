@@ -32,7 +32,7 @@ def backer():
         lastupdate = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         metaData.write( str(lastupdate) + "\n")
         #create new bucket name and save it for future reference
-        bucketName = "backupBucket_" + str(datetime.now().strftime('%Y%m%d%H%M%S'))
+        bucketName = "bucket" + str(datetime.now().strftime('%Y%m%d%H%M%S'))
         metaData.write(bucketName)
         newSave = True
     else:
@@ -62,7 +62,8 @@ def backer():
                 print("Could not connect to service will retry")
                 return -1
             else:
-                print("An error occurred while trying to connect to the client, please check credentials and rerun")
+                print("An error occurred while trying to connect to the client, "
+                      "please check credentials and rerun")
                 return 0
 
     print(" ")
@@ -93,10 +94,11 @@ def backer():
                         print("Could not connect to service will retry")
                         return -1
                     else:
-                        print("An error occurred while trying to upload, "
-                            "please check credentials and file permissions and rerun")
+                        print("An error occurred while trying to connect to the client, "
+                              "please check credentials and rerun")
+                        return 0
 
-                print(filename + " uploaded to " 'Backups' + fullpath[1:length] )e
+                print(filename + " uploaded to " 'Backups' + fullpath[1:length] )
     print("Uploading has finished")
     return 0
 
